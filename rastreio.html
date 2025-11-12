@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Rastreamento de Entrega</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+    input, button { padding: 10px; margin: 10px 0; width: 100%; }
+    a.botao { display: inline-block; padding: 10px; background: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px; margin-top: 10px; }
+    a.botao:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Rastreamento de Entrega</h2>
+    <label for="link">Cole aqui o link do Google Maps (encurtado):</label>
+    <input type="text" id="link" placeholder="https://maps.app.goo.gl/..." />
+    <button onclick="gerarLink()">Gerar Link de Rastreamento</button>
+    <div id="resultado"></div>
+  </div>
+
+  <script>
+    function gerarLink() {
+      const link = document.getElementById('link').value.trim();
+      const resultado = document.getElementById('resultado');
+
+      if (!link.startsWith("https://maps.app.goo.gl/")) {
+        resultado.innerHTML = "<p style='color:red;'>Link inválido. Certifique-se de que é um link encurtado do Google Maps.</p>";
+        return;
+      }
+
+      resultado.innerHTML = `
+        <p>Link de rastreio gerado:</p>
+        <a href="${link}" target="_blank" class="botao">Acompanhar Entrega</a>
+      `;
+    }
+  </script>
+</body>
+</html>

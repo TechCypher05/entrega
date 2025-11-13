@@ -1,166 +1,104 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Painel de Rastreamento - TechBits</title>
-  <meta name="google-signin-client_id" content="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com">
-  https://apis.google.com/js/platform.js</script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f8fb;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: #005baa;
-      color: white;
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-    }
-    header img {
-      height: 40px;
-      margin-right: 15px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 24px;
-    }
-    .container {
-      padding: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: white;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #005baa;
-      color: white;
-    }
-    .search-box {
-      margin-top: 20px;
-    }
-    .search-box input {
-      padding: 8px;
-      width: 300px;
-      font-size: 16px;
-    }
-    .export-btn {
-      margin-top: 10px;
-      padding: 8px 16px;
-      background-color: #005baa;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .copy-btn {
-      padding: 4px 8px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Painel de Rastreamento - TechBits Academy Brasil</title>
+    <meta name="google-signin-client_id" content="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com">
+    https://apis.google.com/js/platform.js</script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        header { display: flex; align-items: center; margin-bottom: 20px; }
+        header img { height: 50px; margin-right: 15px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #fff; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #eee; }
+        button { margin: 10px 5px; padding: 10px 15px; cursor: pointer; background-color: #005baa; color: white; border: none; }
+        button:hover { background-color: #003f7f; }
+        #login { margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-  <header>
-    logo-techbits.png
-    <h1>Painel de Rastreamento - TechBits</h1>
-  </header>
-  <div class="container">
+    <header>
+        <!-- Substitua 'logo-techbits.png' pelo caminho correto da imagem após upload -->
+        <img src="logo-techbits.png" alt="Logo TechBits">
+to - TechBits Academy Brasil</h1>
+    </header>
+
     <div id="login">
-      <h2>Login com Google</h2>
-      <div class="g-signin2" data-onsuccess="onSignIn"></div>
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
     </div>
-    <div id="painel" style="display:none;">
-      <h2>Bem-vindo, <span id="user-name"></span></h2>
-      <div class="search-box">
-        <input type="text" id="search" placeholder="Buscar entregador, link ou data...">
-        <button class="export-btn" onclick="exportCSV()">Exportar CSV</button>
-      </div>
-      <table id="data-table">
+
+    <div>
+        <button onclick="exportToCSV()">Exportar CSV</button>
+        <button onclick="copyLinks()">Copiar Links</button>
+    </div>
+
+    <table id="data-table">
         <thead>
-          <tr>
-            <th>Entregador</th>
-            <th>Link</th>
-            <th>Data/Hora</th>
-            <th>Ações</th>
-          </tr>
+            <tr>
+                <th>Entregador</th>
+                <th>Link de Rastreamento</th>
+                <th>Data/Hora</th>
+            </tr>
         </thead>
         <tbody></tbody>
-      </table>
-    </div>
-  </div>
-  <script>
-    function onSignIn(googleUser) {
-      var profile = googleUser.getBasicProfile();
-      document.getElementById("user-name").textContent = profile.getName();
-      document.getElementById("login").style.display = "none";
-      document.getElementById("painel").style.display = "block";
-      fetchSheetData();
-    }
+    </table>
 
-    function fetchSheetData() {
-      const sheetId = "1xACkuOkW0MkYOVvbaa-1zswaTs_Z1lRII5Z8kZ-XjLk2";
-      const apiKey = "AIzaSyB8APMaz7kxRjKY2rP8mXCt2snPq-CXSGM";
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Rastreamento Entregas?key=${apiKey}`;
+    <script>
+        function onSignIn(googleUser) {
+            fetchSheetData();
+        }
 
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          const rows = data.values.slice(1);
-          const tbody = document.querySelector("#data-table tbody");
-          tbody.innerHTML = "";
-          rows.forEach(row => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${row[0]}</td>
-              <td>${row[1]}${row[1]}</a></td>
-              <td>${row[2]}</td>
-              <td><button class="copy-btn" onclick="copyToClipboard('${row[1]}')">Copiar Link</button></td>
-            `;
-            tbody.appendChild(tr);
-          });
-        });
-    }
+        function fetchSheetData() {
+            const apiKey = "AIzaSyB8APMaz7kxRjKY2rP8mXCt2snPq-CXSGMEu";
+            const sheetId = "1xACkuOkW0MkYOVvbaa-1zswaTs_Z1lRII5Z8kZ-XjLk2";
+            const range = "Página1!A2:C";
 
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Link copiado!");
-      });
-    }
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector("#data-table tbody");
+                    tableBody.innerHTML = "";
+                    data.values.forEach(row => {
+                        const tr = document.createElement("tr");
+                        row.forEach(cell => {
+                            const td = document.createElement("td");
+                            td.textContent = cell;
+                            tr.appendChild(td);
+                        });
+                        tableBody.appendChild(tr);
+                    });
+                });
+        }
 
-    document.getElementById("search").addEventListener("input", function() {
-      const query = this.value.toLowerCase();
-      const rows = document.querySelectorAll("#data-table tbody tr");
-      rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(query) ? "" : "none";
-      });
-    });
+        function exportToCSV() {
+            let csv = [];
+            const rows = document.querySelectorAll("table tr");
+            rows.forEach(row => {
+                const cols = row.querySelectorAll("td, th");
+                const rowData = Array.from(cols).map(col => `"${col.textContent}"`);
+                csv.push(rowData.join(","));
+            });
+            const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", "rastreamento.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
-    function exportCSV() {
-      const rows = document.querySelectorAll("#data-table tr");
-      let csv = "";
-      rows.forEach(row => {
-        const cols = row.querySelectorAll("td, th");
-        const rowData = Array.from(cols).map(col => `"${col.textContent}"`).join(",");
-        csv += rowData + "\\n";
-      });
-      const blob = new Blob([csv], { type: "text/csv" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "rastreamento.csv";
-      link.click();
-    }
-  </script>
+        function copyLinks() {
+            const links = Array.from(document.querySelectorAll("#data-table tbody tr td:nth-child(2)"))
+                .map(td => td.textContent)
+                .join("\n");
+            navigator.clipboard.writeText(links).then(() => {
+                alert("Links copiados para a área de transferência!");
+            });
+        }
+    </script>
+
+    <p><strong>📌 Instrução:</strong> Para adicionar a imagem do logo, envie o arquivo <code>logo-techbits.png</code> para o mesmo diretório do <code>index.html</code> no GitHub Pages.</p>
 </body>

@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Entregador</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    function handleCredentialResponse(response) {
+      // Decode the JWT token to get user info (optional)
+      const jwt = response.credential;
+      sessionStorage.setItem("google_token", jwt);
+      // Redirect to painel.html after login
+      window.location.href = "painel.html";
+    }
+
+    window.onload = function () {
+      google.accounts.id.initialize({
+        client_id: "83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com",
+        callback: handleCredentialResponse
+      });
+      google.accounts.id.renderButton(
+        document.getElementById("buttonDiv"),
+        { theme: "outline", size: "large" }
+      );
+    };
+  </script>
+</head>
+<body>
+  <h2>Login com Google</h2>
+  <div id="buttonDiv"></div>
+</body>
+</html>

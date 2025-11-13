@@ -1,34 +1,36 @@
 
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Painel de Rastreamento</title>
-  <script>
-    window.onload = function () {
-      const token = sessionStorage.getItem("google_token");
-      if (!token) {
-        alert("Você precisa estar logado para acessar o painel.");
-        window.location.href = "login.html";
+  <head>
+    <title>Rastreamento de Entregas</title>
+    https://apis.google.com/js/platform.js</script>
+    <meta name="google-signin-client_id" content="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com">
+    <script>
+      function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        document.getElementById("entregador").value = profile.getName();
+        document.getElementById("formulario").style.display = "block";
+        document.getElementById("login").style.display = "none";
       }
-    };
+    </script>
+  </head>
+  <body>
+    <div id="login">
+      <h2>Login com Google</h2>
+      <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    </div>
 
-    function gerarBotao() {
-      const link = document.getElementById("linkInput").value;
-      if (!link.includes("maps.app.goo.gl") && !link.includes("google.com/maps")) {
-        alert("Por favor, insira um link válido do Google Maps.");
-        return;
-      }
-      const botaoHTML = '<a href="' + link + '" target="_blank"><button>Acompanhar Entrega</button></a>';
-      document.getElementById("botaoContainer").innerHTML = botaoHTML;
-    }
-  </script>
-</head>
-<body>
-  <h2>Painel de Rastreamento</h2>
-  <label for="linkInput">Cole o link do Google Maps:</label><br>
-  <input type="text" id="linkInput" size="60"><br><br>
-  <button onclick="gerarBotao()">Gerar Botão</button>
-  <div id="botaoContainer" style="margin-top:20px;"></div>
-</body>
+    <div id="formulario" style="display:none;">
+      <h2>Envio de Link de Rastreamento</h2>
+      https://script.google.com/macros/s/AKfycbxDNu1M9e4FgaNLIFmvC3SDhvet2EBtmsoWlU0vRKiuZBfML1hWTitc_hGusKGQgbHI/exec
+        <label for="entregador">Nome do Entregador:</label><br>
+        <input type="text" id="entregador" name="entregador" readonly><br><br>
+
+        <label for="link">Link do Google Maps:</label><br>
+        <input type="text" id="link" name="link" required><br><br>
+
+        <input type="submit" value="Enviar">
+      </form>
+    </div>
+  </body>
 </html>

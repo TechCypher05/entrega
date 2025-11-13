@@ -1,130 +1,112 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <title>Painel de Rastreamento - TechBits Academy Brasil</title>
-  <meta name="google-signin-client_id" content="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com">
-  <script src="https://apis.google.com/js/platform.js" async defer></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f7fa;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: #004080;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    header img {
-      height: 50px;
-      vertical-align: middle;
-    }
-    header h1 {
-      display: inline;
-      margin-left: 10px;
-      font-size: 24px;
-    }
-    .container {
-      padding: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: white;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #e0eafc;
-    }
-    .copy-btn {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    .copy-btn:hover {
-      background-color: #0056b3;
-    }
-  </style>
-  <script>
-    function onSignIn(googleUser) {
-      var profile = googleUser.getBasicProfile();
-      document.getElementById("welcome").innerText = "Bem-vindo, " + profile.getName();
-      loadSheetData();
-    }
-
-    function copyToClipboard(link) {
-      navigator.clipboard.writeText(link).then(function() {
-        alert("Link copiado: " + link);
-      }, function(err) {
-        alert("Erro ao copiar link: " + err);
-      });
-    }
-
-    function loadSheetData() {
-      const sheetId = "1xACkuOkW0MkYOVvbaa-1zswaTs_Z1lRII5Z8kZ-XjLk2";
-      const apiKey = "AIzaSyB8APMaz7kxRjKY2rP8mXCt2snPq-CXSGM";
-      const range = "Rastreamento Entregas";
-
-      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`)
-        .then(response => response.json())
-        .then(data => {
-          const table = document.getElementById("data-table");
-          table.innerHTML = "";
-          const rows = data.values;
-          if (rows.length > 0) {
-            const headerRow = document.createElement("tr");
-            rows[0].forEach(header => {
-              const th = document.createElement("th");
-              th.innerText = header;
-              headerRow.appendChild(th);
-            });
-            const th = document.createElement("th");
-            th.innerText = "Ações";
-            headerRow.appendChild(th);
-            table.appendChild(headerRow);
-
-            for (let i = 1; i < rows.length; i++) {
-              const tr = document.createElement("tr");
-              rows[i].forEach(cell => {
-                const td = document.createElement("td");
-                td.innerText = cell;
-                tr.appendChild(td);
-              });
-              const actionTd = document.createElement("td");
-              const copyBtn = document.createElement("button");
-              copyBtn.className = "copy-btn";
-              copyBtn.innerText = "Copiar Link";
-              copyBtn.onclick = () => copyToClipboard(rows[i][1]);
-              actionTd.appendChild(copyBtn);
-              tr.appendChild(actionTd);
-              table.appendChild(tr);
-            }
-          }
-        });
-    }
-  </script>
+    <meta charset="UTF-8">
+    <title>Painel de Rastreamento - TechBits</title>
+    <meta name="google-signin-client_id" content="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        header { margin-bottom: 20px; }
+        h1 { color: #333; }
+        input[type="text"] { padding: 8px; width: 300px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; background-color: #fff; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #eee; }
+        button { margin: 10px 5px; padding: 10px 15px; cursor: pointer; background-color: #005baa; color: white; border: none; }
+        button:hover { background-color: #003f7f; }
+        #login { margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-  <header>
-    <img src="logo-techbits.png" alt="TechBits Academy Brasil">
-    <h1>Painel de Rastreamento</h1>
-  </header>
-  <div class="container">
-    <div class="g-signin2" data-onsuccess="onSignIn"></div>
-    <h2 id="welcome"></h2>
-    <table id="data-table"></table>
-  </div>
+    <header>
+        <h1>Painel de Rastreamento - TechBits</h1>
+    </header>
+
+    <div id="login">
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    </div>
+
+    <input type="text" id="search" placeholder="Buscar entregador, link ou data..." onkeyup="filterTable()">
+
+    <div>
+        <button onclick="exportToCSV()">Exportar CSV</button>
+        <button onclick="copyLinks()">Copiar Links</button>
+    </div>
+
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Entregador</th>
+                <th>Link de Rastreamento</th>
+                <th>Data/Hora</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        function onSignIn(googleUser) {
+            fetchSheetData();
+        }
+
+        function fetchSheetData() {
+            const apiKey = "AIzaSyB8APMaz7kxRjKY2rP8mXCt2snPq-CXSGMEu";
+            const sheetId = "1EZbjZdEfheSvVKMJO6VGNOqVM6ua1fjMe0uWnvNhMr8638Au8h96SZV9";
+            const range = "Rastreamento Entregas!A2:C";
+
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector("#data-table tbody");
+                    tableBody.innerHTML = "";
+                    data.values.forEach(row => {
+                        const tr = document.createElement("tr");
+                        row.forEach(cell => {
+                            const td = document.createElement("td");
+                            td.textContent = cell;
+                            tr.appendChild(td);
+                        });
+                        tableBody.appendChild(tr);
+                    });
+                });
+        }
+
+        function filterTable() {
+            const query = document.getElementById("search").value.toLowerCase();
+            const rows = document.querySelectorAll("#data-table tbody tr");
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? "" : "none";
+            });
+        }
+
+        function exportToCSV() {
+            let csv = [];
+            const rows = document.querySelectorAll("table tr");
+            rows.forEach(row => {
+                const cols = row.querySelectorAll("td, th");
+                const rowData = Array.from(cols).map(col => `"${col.textContent}"`);
+                csv.push(rowData.join(","));
+            });
+            const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", "rastreamento.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function copyLinks() {
+            const links = Array.from(document.querySelectorAll("#data-table tbody tr td:nth-child(2)"))
+                .map(td => td.textContent)
+                .join("\n");
+            navigator.clipboard.writeText(links).then(() => {
+                alert("Links copiados para a área de transferência!");
+            });
+        }
+    </script>
 </body>
 </html>

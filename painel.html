@@ -2,33 +2,129 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Painel de Rastreamento</title>
+  <title>Painel de Rastreamento - TechBits Academy Brasil</title>
+  <meta name="google-signin-client_id" content="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f7fa;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #004080;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    header img {
+      height: 50px;
+      vertical-align: middle;
+    }
+    header h1 {
+      display: inline;
+      margin-left: 10px;
+      font-size: 24px;
+    }
+    .container {
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #e0eafc;
+    }
+    .copy-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .copy-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
   <script>
-    window.onload = function () {
-      const token = sessionStorage.getItem("google_token");
-      if (!token) {
-        alert("Você precisa estar logado para acessar o painel.");
-        window.location.href = "login.html";
-      }
-    };
+    function onSignIn(googleUser) {
+      var profile = googleUser.getBasicProfile();
+      document.getElementById("welcome").innerText = "Bem-vindo, " + profile.getName();
+      loadSheetData();
+    }
 
-    function gerarBotao() {
-      const link = document.getElementById("linkInput").value;
-      if (!link.includes("maps.app.goo.gl") && !link.includes("google.com/maps")) {
-        alert("Por favor, insira um link válido do Google Maps.");
-        return;
-      }
-      const botaoHTML = '<a href="' + link + '" target="_blank"><button>Acompanhar Entrega</button></a>';
-      document.getElementById("botaoContainer").innerHTML = botaoHTML;
+    function copyToClipboard(link) {
+      navigator.clipboard.writeText(link).then(function() {
+        alert("Link copiado: " + link);
+      }, function(err) {
+        alert("Erro ao copiar link: " + err);
+      });
+    }
+
+    function loadSheetData() {
+      const sheetId = "1xACkuOkW0MkYOVvbaa-1zswaTs_Z1lRII5Z8kZ-XjLk2";
+      const apiKey = "AIzaSyB8APMaz7kxRjKY2rP8mXCt2snPq-CXSGM";
+      const range = "Rastreamento Entregas";
+
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+          const table = document.getElementById("data-table");
+          table.innerHTML = "";
+          const rows = data.values;
+          if (rows.length > 0) {
+            const headerRow = document.createElement("tr");
+            rows[0].forEach(header => {
+              const th = document.createElement("th");
+              th.innerText = header;
+              headerRow.appendChild(th);
+            });
+            const th = document.createElement("th");
+            th.innerText = "Ações";
+            headerRow.appendChild(th);
+            table.appendChild(headerRow);
+
+            for (let i = 1; i < rows.length; i++) {
+              const tr = document.createElement("tr");
+              rows[i].forEach(cell => {
+                const td = document.createElement("td");
+                td.innerText = cell;
+                tr.appendChild(td);
+              });
+              const actionTd = document.createElement("td");
+              const copyBtn = document.createElement("button");
+              copyBtn.className = "copy-btn";
+              copyBtn.innerText = "Copiar Link";
+              copyBtn.onclick = () => copyToClipboard(rows[i][1]);
+              actionTd.appendChild(copyBtn);
+              tr.appendChild(actionTd);
+              table.appendChild(tr);
+            }
+          }
+        });
     }
   </script>
 </head>
 <body>
-  <h2>Painel de Rastreamento</h2>
-  <label for="linkInput">Cole o link do Google Maps:</label><br>
-  <input type="text" id="linkInput" size="60"><br><br>
-  <button onclick="gerarBotao()">Gerar Botão</button>
-  <div id="botaoContainer" style="margin-top:20px;"></div>
+  <header>
+    <img src="logo-techbits.png" alt="TechBits Academy Brasil">
+    <h1>Painel de Rastreamento</h1>
+  </header>
+  <div class="container">
+    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    <h2 id="welcome"></h2>
+    <table id="data-table"></table>
+  </div>
 </body>
 </html>

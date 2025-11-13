@@ -1,75 +1,117 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Painel Administrativo - Rastreamento de Entregas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #fff;
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-        th {
-            background-color: #eee;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .loading {
-            font-size: 16px;
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Painel Administrativo - Rastreamento de Entregas</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2em;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    #login-container {
+      margin-bottom: 20px;
+    }
+    #tabela-container {
+      display: none;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background-color: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
+    }
+    .unauthorized {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <h1>Painel Administrativo - Rastreamento de Entregas</h1>
-    <p class="loading">Carregando dados da planilha...</p>
-    <table id="entregas" style="display:none;">
-        <thead>
-            <tr>
-                <th>Entregador</th>
-                <th>Link</th>
-                <th>Data/Hora</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+  <h1>Painel Administrativo - Rastreamento de Entregas</h1>
+  <div id="login-container">
+    <div id="g_id_onload"
+         data-client_id="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
+  </div>
 
-    <script>
-        fetch("https://script.google.com/macros/s/AKfycbzqtPNBCD6wKkUk2IaztRqlRsN8VAgQifJHdX2F4iSxs6wAm8HFo-pZKpOvb_gAdmit/exec")
-            .then(response => response.json())
-            .then(data => {
-                const tbody = document.querySelector("#entregas tbody");
-                data.forEach(item => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${item.entregador}</td>
-                        <td><a href="${item.link}" target="_blank">Acompanhar Entrega</a></td>
-                        <td>${item.data}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                document.querySelector(".loading").style.display = "none";
-                document.querySelector("#entregas").style.display = "table";
-            })
-            .catch(error => {
-                document.querySelector(".loading").textContent = "Erro ao carregar dados.";
-                console.error("Erro ao buscar dados:", error);
-            });
-    </script>
+  <div id="tabela-container">
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Entregador</th>
+          <th>Link</th>
+          <th>Data/Hora</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="mensagem" class="unauthorized"></div>
+
+  <script>
+    const emailsAutorizados = ["contatotechbitsinformatica@gmail.com"];
+
+    function handleCredentialResponse(response) {
+      const data = parseJwt(response.credential);
+      const email = data.email;
+      if (emailsAutorizados.includes(email)) {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("tabela-container").style.display = "block";
+        carregarDados();
+      } else {
+        document.getElementById("mensagem").innerText = "Acesso não autorizado para este e-mail: " + email;
+      }
+    }
+
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    function carregarDados() {
+      fetch("https://script.google.com/macros/s/AKfycbzqtPNBCD6wKkUk2IaztRqlRsN8VAgQifJHdX2F4iSxs6wAm8HFo-pZKpOvb_gAdmit/exec")
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.querySelector("#tabela tbody");
+          tbody.innerHTML = "";
+          data.forEach(item => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.entregador}</td>
+              <td><a href="${item.link}" target="_blank">Acompanhar Entrega</a></td>
+              <td>${item.data}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        });
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Painel de Rastreamento</title>
+  <script>
+    window.onload = function () {
+      const token = sessionStorage.getItem("google_token");
+      if (!token) {
+        alert("Você precisa estar logado para acessar o painel.");
+        window.location.href = "login.html";
+      }
+    };
+
+    function gerarBotao() {
+      const link = document.getElementById("linkInput").value;
+      if (!link.includes("maps.app.goo.gl") && !link.includes("google.com/maps")) {
+        alert("Por favor, insira um link válido do Google Maps.");
+        return;
+      }
+      const botaoHTML = '<a href="' + link + '" target="_blank"><button>Acompanhar Entrega</button></a>';
+      document.getElementById("botaoContainer").innerHTML = botaoHTML;
+    }
+  </script>
+</head>
+<body>
+  <h2>Painel de Rastreamento</h2>
+  <label for="linkInput">Cole o link do Google Maps:</label><br>
+  <input type="text" id="linkInput" size="60"><br><br>
+  <button onclick="gerarBotao()">Gerar Botão</button>
+  <div id="botaoContainer" style="margin-top:20px;"></div>
+</body>
+</html>

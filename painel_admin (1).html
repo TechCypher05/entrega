@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Administrativo - Rastreamento de Entregas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #eee;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .loading {
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Painel Administrativo - Rastreamento de Entregas</h1>
+    <p class="loading">Carregando dados da planilha...</p>
+    <table id="entregas" style="display:none;">
+        <thead>
+            <tr>
+                <th>Entregador</th>
+                <th>Link</th>
+                <th>Data/Hora</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        fetch("https://script.google.com/macros/s/AKfycbzqtPNBCD6wKkUk2IaztRqlRsN8VAgQifJHdX2F4iSxs6wAm8HFo-pZKpOvb_gAdmit/exec")
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector("#entregas tbody");
+                data.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.entregador}</td>
+                        <td><a href="${item.link}" target="_blank">Acompanhar Entrega</a></td>
+                        <td>${item.data}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                document.querySelector(".loading").style.display = "none";
+                document.querySelector("#entregas").style.display = "table";
+            })
+            .catch(error => {
+                document.querySelector(".loading").textContent = "Erro ao carregar dados.";
+                console.error("Erro ao buscar dados:", error);
+            });
+    </script>
+</body>
+</html>

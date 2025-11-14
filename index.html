@@ -1,12 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TechBits - Rastreamento</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
-in: 0;
+  <!-- Fonte Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
       font-family: 'Roboto', sans-serif;
       background: #121212;
       color: #fff;
@@ -15,15 +16,26 @@ in: 0;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     header img {
       width: 150px;
       margin-bottom: 20px;
+      animation: slideDown 1s ease-in-out;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
     h1 {
       font-size: 1.8rem;
       margin-bottom: 10px;
       color: #00bcd4;
+      animation: fadeIn 1.5s ease-in-out;
     }
     form {
       background: #1e1e1e;
@@ -33,12 +45,19 @@ in: 0;
       flex-direction: column;
       gap: 15px;
       width: 300px;
+      box-shadow: 0 0 15px rgba(0, 188, 212, 0.6);
+      animation: fadeIn 2s ease-in-out;
     }
     input {
       padding: 10px;
       border: none;
       border-radius: 4px;
       font-size: 1rem;
+      transition: box-shadow 0.3s;
+    }
+    input:focus {
+      box-shadow: 0 0 8px #00bcd4;
+      outline: none;
     }
     button {
       background: #00bcd4;
@@ -48,10 +67,24 @@ in: 0;
       border-radius: 4px;
       font-size: 1rem;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s, transform 0.2s;
     }
     button:hover {
       background: #0097a7;
+      transform: scale(1.05);
+    }
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #00bcd4;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
     .alert {
       margin-top: 15px;
@@ -59,27 +92,35 @@ in: 0;
       border-radius: 4px;
       text-align: center;
       font-weight: bold;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.5s, transform 0.5s;
+    }
+    .alert.show {
+      opacity: 1;
+      transform: translateY(0);
     }
     .success { background: #4caf50; }
     .error { background: #f44336; }
     .google-login {
       margin-top: 20px;
       text-align: center;
+      animation: fadeIn 2.5s ease-in-out;
     }
   </style>
-  https://accounts.google.com/gsi/client</script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <header>
-    logo-techbits.png
-    <h1>Rastreamento de Entregas</h1>
-  </header>
+  <img src="logo-techbits.png" alt="TechBits Logo">
+</header>
 
   <form id="rastreamentoForm">
     <input type="text" id="nome" placeholder="Nome do Entregador" required>
     <input type="url" id="link" placeholder="Link de Rastreamento" required>
     <button type="submit">Enviar</button>
-    <div id="alertBox"></div>
+    <div id="loading" style="display:none;" class="loading-spinner"></div>
+    <div id="alertBox" class="alert"></div>
   </form>
 
   <div class="google-login">
@@ -94,15 +135,21 @@ in: 0;
   </div>
 
   <script>
-    const API_URL = "COLOQUE_AQUI_A_URL_DO_SEU_WEBAPP";
-
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzqtPNBCD6wKkUk2IaztRqlRsN8VAgQifJHdX2F4iSxs6wAm8HFo-pZKpOvb_gAdmit/exec'; // Exemplo: "https://seu-webapp-url.com/api"
     const form = document.getElementById('rastreamentoForm');
     const alertBox = document.getElementById('alertBox');
+    const loading = document.getElementById('loading');
+    const button = form.querySelector('button');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const nome = document.getElementById('nome').value.trim();
       const link = document.getElementById('link').value.trim();
+
+      // Feedback visual: loading e desabilitar botão
+      loading.style.display = 'block';
+      button.disabled = true;
+      alertBox.className = 'alert';
 
       try {
         const response = await fetch(API_URL, {
@@ -112,23 +159,31 @@ in: 0;
         });
 
         const result = await response.json();
+        loading.style.display = 'none';
+        button.disabled = false;
+
+        alertBox.textContent = result.mensagem;
+        alertBox.className = `alert ${result.status === "sucesso" ? "success" : "error"} show`;
+
         if (result.status === "sucesso") {
-          alertBox.textContent = result.mensagem;
-          alertBox.className = "alert success";
           form.reset();
-        } else {
-          alertBox.textContent = result.mensagem;
-          alertBox.className = "alert error";
         }
       } catch (error) {
+        loading.style.display = 'none';
+      } catch (error) {
+        loading.style.display = 'none';
+        button.disabled = false;
         alertBox.textContent = "Erro ao enviar dados.";
-        alertBox.className = "alert error";
+        alertBox.className = "alert error show";
       }
     });
 
     function handleCredentialResponse(response) {
+    function handleCredentialResponse(response) {
       console.log("ID Token do Google:", response.credential);
-      alert("Login Google realizado com sucesso!");
+      const alertBox = document.getElementById('alertBox');
+      alertBox.textContent = "Login Google realizado com sucesso!";
+      alertBox.className = "alert success show";
     }
   </script>
 </body>

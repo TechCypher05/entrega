@@ -1,142 +1,93 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>TechBits - Rastreamento de Entregas</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google Sign-In -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        header {
-            background-color: #003366;
-            color: white;
-            padding: 20px;
-        }
-        h1 {
-            margin: 0;
-        }
-        .container {
-            margin: 40px auto;
-            max-width: 500px;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="url"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #003366;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0055a5;
-        }
-        #message {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechBits - Rastreamento de Entregas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .mensagem {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>TechBits - Rastreamento de Entregas</h1>
-    </header>
+  <div class="container">
+    <h2>Rastreamento de Entregas</h2>
+    <form id="rastreamentoForm">
+      <input type="text" id="nome" name="nome" placeholder="Nome do Entregador" required>
+      <input type="url" id="link" name="link" placeholder="Link de Rastreamento" required>
+      <button type="submit">Enviar</button>
+    </form>
+    <div class="mensagem" id="mensagem"></div>
+  </div>
 
-    <div class="container">
-        <!-- Google Sign-In -->
-        <div id="g_id_onload"
-            data-client_id="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com"
-            data-context="signin"
-            data-ux_mode="popup"
-            data-callback="handleCredentialResponse"
-            data-auto_prompt="false">
-        </div>
+  <script>
+    const form = document.getElementById('rastreamentoForm');
+    const mensagemDiv = document.getElementById('mensagem');
 
-        <div class="g_id_signin"
-            data-type="standard"
-            data-size="large"
-            data-theme="outline"
-            data-text="sign_in_with"
-            data-shape="rectangular"
-            data-logo_alignment="left">
-        </div>
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-        <form id="trackingForm">
-            <label for="nome">Nome do Entregador:</label>
-            <input type="text" id="nome" name="nome" required>
+      const nome = document.getElementById('nome').value.trim();
+      const link = document.getElementById('link').value.trim();
 
-            <label for="link">Link de Rastreamento:</label>
-            <input type="url" id="link" name="link" required>
+      if (!nome || !link) {
+        mensagemDiv.textContent = "Preencha todos os campos!";
+        mensagemDiv.style.color = "red";
+        return;
+      }
 
-            <button type="submit">Enviar</button>
-        </form>
-        <div id="message"></div>
-    </div>
-
-    <script>
-        function handleCredentialResponse(response) {
-            console.log("Encoded JWT ID token: " + response.credential);
-        }
-
-        document.getElementById("trackingForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const nome = document.getElementById("nome").value.trim();
-            const link = document.getElementById("link").value.trim();
-            const messageDiv = document.getElementById("message");
-
-            if (!nome || !link) {
-                messageDiv.textContent = "Por favor, preencha todos os campos.";
-                messageDiv.style.color = "red";
-                return;
-            }
-            if (!link.startsWith("http")) {
-                messageDiv.textContent = "O link deve começar com http ou https.";
-                messageDiv.style.color = "red";
-                return;
-            }
-
-            const payload = new URLSearchParams();
-            payload.append("nome", nome);
-            payload.append("link", link);
-
-            fetch("https://script.google.com/macros/s/AKfycbzLq9hZbjCuaRy9SklKZ3r4hsjDf4Ifyi21yNGFza2zQXj26IuNQidTC6QuIznUy-b-/exec", {
-                method: "POST",
-                body: payload
-            })
-            .then(response => response.text())
-            .then(data => {
-                messageDiv.textContent = data;
-                messageDiv.style.color = "green";
-                document.getElementById("trackingForm").reset();
-            })
-            .catch(error => {
-                messageDiv.textContent = "Erro ao enviar dados: " + error;
-                messageDiv.style.color = "red";
-            });
+      try {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzLq9hZbjCuaRy9SklKZ3r4hsjDf4Ifyi21yNGFza2zQXj26IuNQidTC6QuIznUy-b-/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ nome, link })
         });
-    </script>
+
+        const result = await response.json();
+        if (result.status === "sucesso") {
+          mensagemDiv.textContent = "✅ " + result.mensagem;
+          mensagemDiv.style.color = "green";
+          form.reset();
+        } else {
+          mensagemDiv.textContent = "❌ " + result.mensagem;
+          mensagemDiv.style.color = "red";
+        }
+      } catch (error) {
+        mensagemDiv.textContent = "Erro ao enviar dados: " + error.message;
+        mensagemDiv.style.color = "red";
+      }
+    });
+  </script>
 </body>
 </html>

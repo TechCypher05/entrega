@@ -1,15 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>TechBits - Painel de Rastreamento</title>
+    <title>Painel de Rastreamento - TechBits</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: #eef2f5;
             margin: 0;
             padding: 0;
         }
@@ -19,53 +18,40 @@
             padding: 20px;
             text-align: center;
         }
-        h1 {
-            margin: 0;
-        }
         .container {
             padding: 20px;
-            max-width: 1000px;
+            max-width: 900px;
             margin: auto;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         th, td {
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 8px;
             text-align: left;
         }
-        th {
-            background-color: #003366;
-            color: white;
+        .error {
+            color: red;
+            font-weight: bold;
         }
-        input[type="text"], input[type="url"] {
-            padding: 8px;
-            margin: 5px;
-            width: 200px;
-        }
-        button {
-            padding: 8px 16px;
-            margin: 5px;
-            background-color: #003366;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0055a5;
+        .success {
+            color: green;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>TechBits - Painel de Rastreamento</h1>
+        <h1>Painel de Rastreamento - TechBits</h1>
     </header>
-
     <div class="container">
-        <!-- Google Sign-In -->
         <div id="g_id_onload"
             data-client_id="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com"
             data-context="signin"
@@ -73,7 +59,6 @@
             data-callback="handleCredentialResponse"
             data-auto_prompt="false">
         </div>
-
         <div class="g_id_signin"
             data-type="standard"
             data-size="large"
@@ -87,6 +72,7 @@
         <input type="text" id="nome" placeholder="Nome do Entregador">
         <input type="url" id="link" placeholder="Link de Rastreamento">
         <button onclick="adicionarRastreamento()">Adicionar</button>
+        <div id="mensagem"></div>
 
         <h2>Buscar</h2>
         <input type="text" id="busca" placeholder="Buscar por nome" onkeyup="filtrarTabela()">
@@ -106,67 +92,79 @@
     </div>
 
     <script>
-        const webAppUrl = "https://script.google.com/macros/s/AKfycbzLq9hZbjCuaRy9SklKZ3r4hsjDf4Ifyi21yNGFza2zQXj26IuNQidTC6QuIznUy-b-/exec";
-
         function handleCredentialResponse(response) {
             console.log("Login Google JWT: " + response.credential);
         }
 
         function adicionarRastreamento() {
-            const nome = document.getElementById("nome").value;
-            const link = document.getElementById("link").value;
+            const nome = document.getElementById("nome").value.trim();
+            const link = document.getElementById("link").value.trim();
+            const mensagem = document.getElementById("mensagem");
+
             if (!nome || !link) {
-                alert("Preencha todos os campos.");
+                mensagem.innerHTML = "<p class='error'>Preencha todos os campos corretamente.</p>";
                 return;
             }
+
+            if (!link.startsWith("http")) {
+                mensagem.innerHTML = "<p class='error'>O link deve começar com http ou https.</p>";
+                return;
+            }
+
             const payload = new URLSearchParams();
             payload.append("nome", nome);
             payload.append("link", link);
 
-            fetch(webAppUrl, {
+            fetch("https://script.google.com/macros/s/AKfycbzLq9hZbjCuaRy9SklKZ3r4hsjDf4Ifyi21yNGFza2zQXj26IuNQidTC6QuIznUy-b-/exec", {
                 method: "POST",
                 body: payload
             })
-            .then(res => res.text())
-            .then(msg => {
-                alert(msg);
+            .then(response => response.text())
+            .then(data => {
+                mensagem.innerHTML = "<p class='success'>" + data + "</p>";
                 carregarDados();
             })
-            .catch(err => alert("Erro ao enviar: " + err));
+            .catch(error => {
+                mensagem.innerHTML = "<p class='error'>Erro ao enviar dados: " + error + "</p>";
+            });
         }
 
         function carregarDados() {
-            fetch("https://sheets.googleapis.com/v4/spreadsheets/1EZbjZdEfheSvVKMJO6VGNOqVM6ua1fjMe0uWnvNhMr8638Au8h96SZV9/values/Rastreamento Entregas?key=AIzaSyB8APMaz7kxRjKY2rP8mXCt2snPq-CXSGMEu")
-            .then(res => res.json())
-            .then(data => {
+            fetch("https://docs.google.com/spreadsheets/d/1EZbjZdEfheSvVKMJO6VGNOqVM6ua1fjMe0uWnvNhMr8638Au8h96SZV9/gviz/tq?tqx=out:json")
+            .then(res => res.text())
+            .then(text => {
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const rows = json.table.rows;
                 const tbody = document.querySelector("#tabela tbody");
                 tbody.innerHTML = "";
-                const rows = data.values.slice(1);
                 rows.forEach(row => {
+                    const entregador = row.c[0]?.v || "";
+                    const link = row.c[1]?.v || "";
+                    const dataHora = row.c[2]?.v || "";
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td>${row[0]}</td>
-                        <td><a href="${row[1]}" target="_blank">${row[1]}</a></td>
-                        <td>${row[2]}</td>
-                        <td><button onclick="copiar('${row[1]}')">Copiar Link</button></td>
+                        <td>${entregador}</td>
+                        <td><a href="${link}" target="_blank">${link}</a></td>
+                        <td>${dataHora}</td>
+                        <td><button onclick="copiarLink('${link}')">Copiar</button></td>
                     `;
                     tbody.appendChild(tr);
                 });
             });
         }
 
-        function copiar(texto) {
-            navigator.clipboard.writeText(texto).then(() => {
+        function copiarLink(link) {
+            navigator.clipboard.writeText(link).then(() => {
                 alert("Link copiado!");
             });
         }
 
         function filtrarTabela() {
-            const filtro = document.getElementById("busca").value.toLowerCase();
+            const termo = document.getElementById("busca").value.toLowerCase();
             const linhas = document.querySelectorAll("#tabela tbody tr");
             linhas.forEach(linha => {
                 const nome = linha.cells[0].textContent.toLowerCase();
-                linha.style.display = nome.includes(filtro) ? "" : "none";
+                linha.style.display = nome.includes(termo) ? "" : "none";
             });
         }
 
@@ -174,9 +172,10 @@
             let csv = "Entregador,Link,Data/Hora\n";
             const linhas = document.querySelectorAll("#tabela tbody tr");
             linhas.forEach(linha => {
-                const cols = linha.querySelectorAll("td");
-                const linhaCSV = Array.from(cols).slice(0, 3).map(td => td.textContent).join(",");
-                csv += linhaCSV + "\n";
+                const entregador = linha.cells[0].textContent;
+                const link = linha.cells[1].textContent;
+                const dataHora = linha.cells[2].textContent;
+                csv += `"${entregador}","${link}","${dataHora}"\n`;
             });
             const blob = new Blob([csv], { type: "text/csv" });
             const url = URL.createObjectURL(blob);

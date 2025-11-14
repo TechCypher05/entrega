@@ -124,11 +124,15 @@
   <script>
     const form = document.getElementById('rastreamentoForm');
     const mensagemDiv = document.getElementById('mensagem');
+    const alertBox = document.getElementById('alertBox');
+    const loading = document.getElementById('loading');
+    const button = form.querySelector('button');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const nome = document.getElementById('nome').value.trim();
       const link = document.getElementById('link').value.trim();
+    
 
       if (!nome || !link) {
         mensagemDiv.textContent = "Preencha todos os campos!";
@@ -146,6 +150,7 @@
         const result = await response.json();
         loading.style.display = 'none';
         button.disabled = false;
+        
         if (result.status === "sucesso") {
           mensagemDiv.textContent = "✅ " + result.mensagem;
           mensagemDiv.style.color = "green";

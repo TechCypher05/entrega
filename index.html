@@ -154,6 +154,9 @@
         loading.style.display = 'none';
         button.disabled = false;
         
+        alertBox.textContent = result.mensagem;
+        alertBox.className = `alert ${result.status === "sucesso" ? "success" : "error"} show`;
+
         if (result.status === "sucesso") {
           mensagemDiv.textContent = "✅ " + result.mensagem;
           mensagemDiv.style.color = "green";

@@ -144,6 +144,8 @@
         });
 
         const result = await response.json();
+        loading.style.display = 'none';
+        button.disabled = false;
         if (result.status === "sucesso") {
           mensagemDiv.textContent = "✅ " + result.mensagem;
           mensagemDiv.style.color = "green";

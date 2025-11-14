@@ -1,101 +1,70 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel TechBits - Rastreamento</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
-    .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h2 { text-align: center; margin-bottom: 20px; }
-    input { width: 100%; padding: 10px; margin-bottom: 15px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #007bff; color: white; }
-    button { padding: 10px 15px; margin: 10px 0; background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px; }
-    button:hover { background-color: #218838; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel TechBits</title>
+<style>
+body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+.container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
+input { width: 100%; padding: 10px; margin-bottom: 15px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+th { background: #007bff; color: #fff; }
+button { padding: 10px; margin: 10px 0; background: #28a745; color: #fff; border: none; cursor: pointer; }
+button:hover { background: #218838; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>Painel de Rastreamento</h2>
-    <input type="text" id="search" placeholder="Buscar por nome ou link...">
-    <button id="exportCSV">Exportar CSV</button>
-    <table id="tabelaEntregas">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Link</th>
-          <th>Data/Hora</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzqtPNBCD6wKkUk2IaztRqlRsN8VAgQifJHdX2F4iSxs6wAm8HFo-pZKpOvb_gAdmit/exec';
-
-    async function carregarDados() {
-      try {
-        const response = await fetch(API_URL);
-        const dados = await response.json();
-
-        if (!dados || !dados.length) {
-          document.querySelector('#tabelaEntregas tbody').innerHTML = '<tr><td colspan="3">Nenhum dado encontrado</td></tr>';
-          return;
-        }
-
-        renderTabela(dados);
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-      }
-    }
-
-    function renderTabela(dados) {
-      const tbody = document.querySelector('#tabelaEntregas tbody');
-      tbody.innerHTML = '';
-
-      dados.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${item[0]}</td>
-          <td>${item[1]}${item[1]}</a></td>
-          <td>${item[2]}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    document.getElementById('search').addEventListener('input', (e) => {
-      const termo = e.target.value.toLowerCase();
-      const linhas = document.querySelectorAll('#tabelaEntregas tbody tr');
-
-      linhas.forEach(linha => {
-        const texto = linha.textContent.toLowerCase();
-        linha.style.display = texto.includes(termo) ? '' : 'none';
-      });
-    });
-
-    document.getElementById('exportCSV').addEventListener('click', () => {
-      const linhas = document.querySelectorAll('#tabelaEntregas tr');
-      let csv = [];
-
-      linhas.forEach(linha => {
-        const colunas = linha.querySelectorAll('th, td');
-        const linhaCSV = Array.from(colunas).map(col => col.textContent).join(',');
-        csv.push(linhaCSV);
-      });
-
-      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'rastreamento_entregas.csv';
-      a.click();
-    });
-
-    carregarDados();
-  </script>
+<div class="container">
+<h2>Painel de Rastreamento</h2>
+<input type="text" id="search" placeholder="Buscar por nome ou link...">
+<button id="exportCSV">Exportar CSV</button>
+<table id="tabelaEntregas">
+<thead><tr><th>Nome</th><th>Link</th><th>Data/Hora</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzWHvhrcHUIt2MsUwLA9Gv9-PcUWhIJbyYXlyJimQHGxruO9W6xne9u2aL77kHBkVcE/exec';
+async function carregarDados() {
+try {
+const response = await fetch(API_URL);
+const dados = await response.json();
+renderTabela(dados);
+} catch (error) { console.error('Erro ao carregar dados:', error); }
+}
+function renderTabela(dados) {
+const tbody = document.querySelector('#tabelaEntregas tbody');
+tbody.innerHTML = '';
+dados.forEach(item => {
+const tr = document.createElement('tr');
+tr.innerHTML = `<td>${item[0]}</td><td><a href="${item[1]}" target="_blank">${item[1]}</a></td><td>${item[2]}</td>`;
+tbody.appendChild(tr);
+});
+}
+document.getElementById('search').addEventListener('input', e => {
+const termo = e.target.value.toLowerCase();
+document.querySelectorAll('#tabelaEntregas tbody tr').forEach(linha => {
+linha.style.display = linha.textContent.toLowerCase().includes(termo) ? '' : 'none';
+});
+});
+document.getElementById('exportCSV').addEventListener('click', () => {
+const linhas = document.querySelectorAll('#tabelaEntregas tr');
+let csv = [];
+linhas.forEach(linha => {
+const colunas = linha.querySelectorAll('th, td');
+const linhaCSV = Array.from(colunas).map(col => col.textContent).join(',');
+csv.push(linhaCSV);
+});
+const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'rastreamento_entregas.csv';
+a.click();
+});
+carregarDados();
+</script>
 </body>
 </html>

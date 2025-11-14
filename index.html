@@ -139,7 +139,7 @@
       button.disabled = true;
       alertBox.className = 'alert';
 
-      if (!nome || !link) {
+        if (!nome || !link) {
         mensagemDiv.textContent = "Preencha todos os campos!";
         mensagemDiv.style.color = "red";
         return;
@@ -167,6 +167,12 @@
           mensagemDiv.textContent = "❌ " + result.mensagem;
           mensagemDiv.style.color = "red";
         }
+      } catch (error) {
+        loading.style.display = 'none';
+        button.disabled = false;
+        alertBox.textContent = "Erro ao enviar dados.";
+        alertBox.className = "alert error show";
+      }
     });
   </script>
 </body>

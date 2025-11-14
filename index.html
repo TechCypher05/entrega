@@ -1,47 +1,111 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TechBits - Rastreamento de Entregas</title>
-  <style>
-     body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
-    .container { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    input, button { width: 100%; padding: 10px; margin: 8px 0; font-size: 16px; }
-    button { background-color: #007bff; color: #fff; border: none; cursor: pointer; }
-    button:hover { background-color: #0056b3; }
-    .mensagem { margin-top: 10px; font-weight: bold; }
+  <title>TechBits - Rastreamento</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+in: 0;
+      font-family: 'Roboto', sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    header img {
+      width: 150px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: #00bcd4;
+    }
+    form {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 300px;
+    }
+    input {
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    button {
+      background: #00bcd4;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0097a7;
+    }
+    .alert {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .success { background: #4caf50; }
+    .error { background: #f44336; }
+    .google-login {
+      margin-top: 20px;
+      text-align: center;
+    }
   </style>
+  https://accounts.google.com/gsi/client</script>
 </head>
 <body>
-  <div class="container">
-    <h2>Rastreamento de Entregas</h2>
-    <form id="rastreamentoForm">
-      <input type="text" id="nome" name="nome" placeholder="Nome do Entregador" required>
-      <input type="url" id="link" name="link" placeholder="Link de Rastreamento" required>
-      <button type="submit">Enviar</button>
-    </form>
-    <div class="mensagem" id="mensagem"></div>
+  <header>
+    logo-techbits.png
+    <h1>Rastreamento de Entregas</h1>
+  </header>
+
+  <form id="rastreamentoForm">
+    <input type="text" id="nome" placeholder="Nome do Entregador" required>
+    <input type="url" id="link" placeholder="Link de Rastreamento" required>
+    <button type="submit">Enviar</button>
+    <div id="alertBox"></div>
+  </form>
+
+  <div class="google-login">
+    <div id="g_id_onload"
+         data-client_id="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
   </div>
 
   <script>
+    const API_URL = "COLOQUE_AQUI_A_URL_DO_SEU_WEBAPP";
+
     const form = document.getElementById('rastreamentoForm');
-    const mensagemDiv = document.getElementById('mensagem');
+    const alertBox = document.getElementById('alertBox');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const nome = document.getElementById('nome').value.trim();
       const link = document.getElementById('link').value.trim();
 
-      if (!nome || !link) {
-        mensagemDiv.textContent = "Preencha todos os campos!";
-        mensagemDiv.style.color = "red";
-        return;
-      }
-
       try {
-         const response = await fetch('https://script.google.com/macros/s/AKfycbzqtPNBCD6wKkUk2IaztRqlRsN8VAgQifJHdX2F4iSxs6wAm8HFo-pZKpOvb_gAdmit/exec', {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams({ nome, link })
@@ -49,18 +113,23 @@
 
         const result = await response.json();
         if (result.status === "sucesso") {
-          mensagemDiv.textContent = "✅ " + result.mensagem;
-          mensagemDiv.style.color = "green";
+          alertBox.textContent = result.mensagem;
+          alertBox.className = "alert success";
           form.reset();
         } else {
-          mensagemDiv.textContent = "❌ " + result.mensagem;
-          mensagemDiv.style.color = "red";
+          alertBox.textContent = result.mensagem;
+          alertBox.className = "alert error";
         }
       } catch (error) {
-        mensagemDiv.textContent = "Erro ao enviar dados: " + error.message;
-        mensagemDiv.style.color = "red";
+        alertBox.textContent = "Erro ao enviar dados.";
+        alertBox.className = "alert error";
       }
     });
+
+    function handleCredentialResponse(response) {
+      console.log("ID Token do Google:", response.credential);
+      alert("Login Google realizado com sucesso!");
+    }
   </script>
 </body>
 </html>

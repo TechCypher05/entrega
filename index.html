@@ -150,13 +150,14 @@
         });
 
         const result = await response.json();
+        loading.style.display = 'none';
+        button.disabled = false;
+
+        alertBox.textContent = result.mensagem;
+        alertBox.className = `alert ${result.status === "sucesso" ? "success" : "error"} show`;
+
         if (result.status === "sucesso") {
-          mensagemDiv.textContent = "✅ " + result.mensagem;
-          mensagemDiv.style.color = "green";
           form.reset();
-        } else {
-          mensagemDiv.textContent = "❌ " + result.mensagem;
-          mensagemDiv.style.color = "red";
         }
       } catch (error) {
         loading.style.display = 'none';

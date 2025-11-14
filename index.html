@@ -133,6 +133,9 @@
       const nome = document.getElementById('nome').value.trim();
       const link = document.getElementById('link').value.trim();
     
+      loading.style.display = 'block';
+      button.disabled = true;
+      alertBox.className = 'alert';
 
       if (!nome || !link) {
         mensagemDiv.textContent = "Preencha todos os campos!";

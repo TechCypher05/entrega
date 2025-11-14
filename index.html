@@ -54,6 +54,10 @@
         button:hover {
             background-color: #0055a5;
         }
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -89,20 +93,49 @@
 
             <button type="submit">Enviar</button>
         </form>
+        <div id="message"></div>
     </div>
 
     <script>
         function handleCredentialResponse(response) {
             console.log("Encoded JWT ID token: " + response.credential);
-            // Aqui você pode validar o token ou redirecionar o usuário
         }
 
         document.getElementById("trackingForm").addEventListener("submit", function(event) {
             event.preventDefault();
-            const nome = document.getElementById("nome").value;
-            const link = document.getElementById("link").value;
-            alert("Dados enviados:\nNome: " + nome + "\nLink: " + link);
-            // Aqui você pode integrar com Google Apps Script para enviar os dados
+            const nome = document.getElementById("nome").value.trim();
+            const link = document.getElementById("link").value.trim();
+            const messageDiv = document.getElementById("message");
+
+            if (!nome || !link) {
+                messageDiv.textContent = "Por favor, preencha todos os campos.";
+                messageDiv.style.color = "red";
+                return;
+            }
+            if (!link.startsWith("http")) {
+                messageDiv.textContent = "O link deve começar com http ou https.";
+                messageDiv.style.color = "red";
+                return;
+            }
+
+            const payload = new URLSearchParams();
+            payload.append("nome", nome);
+            payload.append("link", link);
+
+            fetch("https://script.google.com/macros/s/AKfycbzLq9hZbjCuaRy9SklKZ3r4hsjDf4Ifyi21yNGFza2zQXj26IuNQidTC6QuIznUy-b-/exec", {
+                method: "POST",
+                body: payload
+            })
+            .then(response => response.text())
+            .then(data => {
+                messageDiv.textContent = data;
+                messageDiv.style.color = "green";
+                document.getElementById("trackingForm").reset();
+            })
+            .catch(error => {
+                messageDiv.textContent = "Erro ao enviar dados: " + error;
+                messageDiv.style.color = "red";
+            });
         });
     </script>
 </body>

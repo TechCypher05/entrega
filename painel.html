@@ -1,207 +1,146 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Painel TechBits - Rastreamento</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #003366;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            margin: 20px auto;
-            max-width: 900px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #003366;
-            color: white;
-        }
-        input[type="text"], input[type="url"] {
-            padding: 8px;
-            margin: 5px;
-            width: calc(50% - 20px);
-        }
-        button {
-            padding: 8px 15px;
-            margin: 5px;
-            background-color: #003366;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0055a5;
-        }
-        #message {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel TechBits - Rastreamento</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 10px 0;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Painel TechBits - Rastreamento</h1>
-    </header>
-    <div class="container">
-        <div id="g_id_onload"
-            data-client_id="83526333624-frc9b5k1qe5jdd2vif9cc8fesmbmb4ab.apps.googleusercontent.com"
-            data-context="signin"
-            data-ux_mode="popup"
-            data-callback="handleCredentialResponse"
-            data-auto_prompt="false">
-        </div>
-        <div class="g_id_signin"
-            data-type="standard"
-            data-size="large"
-            data-theme="outline"
-            data-text="sign_in_with"
-            data-shape="rectangular"
-            data-logo_alignment="left">
-        </div>
+  <div class="container">
+    <h2>Painel de Rastreamento</h2>
+    <input type="text" id="search" placeholder="Buscar por nome ou link...">
+    <button id="exportCSV">Exportar CSV</button>
+    <table id="tabelaEntregas">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Link</th>
+          <th>Data/Hora</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-        <h2>Adicionar Rastreamento</h2>
-        <input type="text" id="nome" placeholder="Nome do Entregador">
-        <input type="url" id="link" placeholder="Link de Rastreamento">
-        <button onclick="adicionar()">Adicionar</button>
-        <div id="message"></div>
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzLq9hZbjCuaRy9SklKZ3r4hsjDf4Ifyi21yNGFza2zQXj26IuNQidTC6QuIznUy-b-/exec';
 
-        <h2>Lista de Entregas</h2>
-        <input type="text" id="search" placeholder="Buscar por nome" onkeyup="filtrar()">
-        <button onclick="exportarCSV()">Exportar CSV</button>
-        <table id="tabela">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Link</th>
-                    <th>Data/Hora</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+    async function carregarDados() {
+      try {
+        const response = await fetch(API_URL);
+        const dados = await response.json();
 
-    <script>
-        const SHEET_ID = "1xACkuOkW0MkYOVvbaa-1zswaTs_Z1lRII5Z8kZ-XjLk";
-        const API_KEY = "AIzaSyB8APMaz7kxRjKY2rP8mXCt2snPq-CXSGM";
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLq9hZbjCuaRy9SklKZ3r4hsjDf4Ifyi21yNGFza2zQXj26IuNQidTC6QuIznUy-b-/exec";
-
-        function handleCredentialResponse(response) {
-            console.log("Login Google realizado.");
+        if (!dados || !dados.length) {
+          document.querySelector('#tabelaEntregas tbody').innerHTML = '<tr><td colspan="3">Nenhum dado encontrado</td></tr>';
+          return;
         }
 
-        function adicionar() {
-            const nome = document.getElementById("nome").value.trim();
-            const link = document.getElementById("link").value.trim();
-            const messageDiv = document.getElementById("message");
+        renderTabela(dados);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      }
+    }
 
-            if (!nome || !link) {
-                messageDiv.textContent = "Por favor, preencha todos os campos.";
-                messageDiv.style.color = "red";
-                return;
-            }
-            if (!link.startsWith("http")) {
-                messageDiv.textContent = "O link deve começar com http ou https.";
-                messageDiv.style.color = "red";
-                return;
-            }
+    function renderTabela(dados) {
+      const tbody = document.querySelector('#tabelaEntregas tbody');
+      tbody.innerHTML = '';
 
-            const payload = new URLSearchParams();
-            payload.append("nome", nome);
-            payload.append("link", link);
+      dados.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item[0]}</td>
+          <td>${item[1]}${item[1]}</a></td>
+          <td>${item[2]}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-            fetch(WEB_APP_URL, {
-                method: "POST",
-                body: payload
-            })
-            .then(response => response.text())
-            .then(data => {
-                messageDiv.textContent = data;
-                messageDiv.style.color = "green";
-                document.getElementById("nome").value = "";
-                document.getElementById("link").value = "";
-                carregarDados();
-            })
-            .catch(error => {
-                messageDiv.textContent = "Erro ao enviar dados: " + error;
-                messageDiv.style.color = "red";
-            });
-        }
+    // Busca em tempo real
+    document.getElementById('search').addEventListener('input', (e) => {
+      const termo = e.target.value.toLowerCase();
+      const linhas = document.querySelectorAll('#tabelaEntregas tbody tr');
 
-        function carregarDados() {
-            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Rastreamento Entregas?key=${API_KEY}`)
-            .then(response => response.json())
-            .then(data => {
-                const tbody = document.querySelector("#tabela tbody");
-                tbody.innerHTML = "";
-                if (data.values && data.values.length > 1) {
-                    for (let i = 1; i < data.values.length; i++) {
-                        const row = data.values[i];
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `<td>${row[0]}</td><td><a href="${row[1]}" target="_blank">${row[1]}</a></td><td>${row[2]}</td><td><button onclick="copiarLink('${row[1]}')">Copiar</button></td>`;
-                        tbody.appendChild(tr);
-                    }
-                }
-            })
-            .catch(error => console.error("Erro ao carregar dados:", error));
-        }
+      linhas.forEach(linha => {
+        const texto = linha.textContent.toLowerCase();
+        linha.style.display = texto.includes(termo) ? '' : 'none';
+      });
+    });
 
-        function filtrar() {
-            const termo = document.getElementById("search").value.toLowerCase();
-            const linhas = document.querySelectorAll("#tabela tbody tr");
-            linhas.forEach(linha => {
-                const nome = linha.cells[0].textContent.toLowerCase();
-                linha.style.display = nome.includes(termo) ? "" : "none";
-            });
-        }
+    // Exportar CSV
+    document.getElementById('exportCSV').addEventListener('click', () => {
+      const linhas = document.querySelectorAll('#tabelaEntregas tr');
+      let csv = [];
 
-        function exportarCSV() {
-            let csv = "Nome,Link,Data/Hora\n";
-            const linhas = document.querySelectorAll("#tabela tbody tr");
-            linhas.forEach(linha => {
-                const cols = linha.querySelectorAll("td");
-                csv += `${cols[0].textContent},${cols[1].textContent},${cols[2].textContent}\n`;
-            });
-            const blob = new Blob([csv], { type: "text/csv" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "rastreamento.csv";
-            a.click();
-        }
+      linhas.forEach(linha => {
+        const colunas = linha.querySelectorAll('th, td');
+        const linhaCSV = Array.from(colunas).map(col => col.textContent).join(',');
+        csv.push(linhaCSV);
+      });
 
-        function copiarLink(link) {
-            navigator.clipboard.writeText(link).then(() => {
-                alert("Link copiado!");
-            });
-        }
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'rastreamento_entregas.csv';
+      a.click();
+    });
 
-        window.onload = carregarDados;
-    </script>
+    // Carregar dados ao iniciar
+    carregarDados();
+  </script>
 </body>
-</html>
